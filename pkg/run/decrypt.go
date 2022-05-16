@@ -4,15 +4,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"os"
-	"syscall"
-
 	"github.com/kubetrail/bip32/pkg/keys"
+	"github.com/kubetrail/bip39/pkg/passphrases"
 	"github.com/kubetrail/passwd-lock/pkg/crypto"
 	"github.com/kubetrail/passwd-lock/pkg/flags"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/term"
+	"os"
 )
 
 func Decrypt(cmd *cobra.Command, args []string) error {
@@ -36,19 +34,10 @@ func Decrypt(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(passphrase) == 0 {
-		if _, err := fmt.Fprintf(cmd.OutOrStdout(), "Enter passphrase: "); err != nil {
-			return fmt.Errorf("failed to write to output: %w", err)
-		}
-
-		key, err := term.ReadPassword(syscall.Stdin)
+		passphrase, err = passphrases.Prompt(cmd.OutOrStdout())
 		if err != nil {
-			return fmt.Errorf("failed to read encryption password from input: %w", err)
+			return fmt.Errorf("failed to prompt for passphrase: %w", err)
 		}
-		if _, err := fmt.Fprintln(cmd.OutOrStdout()); err != nil {
-			return fmt.Errorf("failed to write to output: %w", err)
-		}
-
-		passphrase = string(key)
 	}
 
 	key, err := crypto.NewAesKeyFromPassphrase([]byte(passphrase))
