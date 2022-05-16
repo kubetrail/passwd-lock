@@ -38,6 +38,7 @@ func init() {
 	rootCmd.AddCommand(decryptCmd)
 	f := decryptCmd.Flags()
 
-	f.String(flags.Plaintext, "", "Output plaintext filename")
-	f.String(flags.Ciphertext, "", "Input ciphertext filename")
+	f.String(flags.Plaintext, "-", "Output plaintext filename")
+	f.String(flags.Ciphertext, "-", "Input ciphertext filename")
+	f.String(flags.Passphrase, "", "Passphrase for encryption")
 }
