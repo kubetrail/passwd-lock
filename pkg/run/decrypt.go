@@ -4,13 +4,15 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"os"
+
 	"github.com/kubetrail/bip32/pkg/keys"
 	"github.com/kubetrail/bip39/pkg/passphrases"
+	"github.com/kubetrail/bip39/pkg/prompts"
 	"github.com/kubetrail/passwd-lock/pkg/crypto"
 	"github.com/kubetrail/passwd-lock/pkg/flags"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os"
 )
 
 func Decrypt(cmd *cobra.Command, args []string) error {
@@ -33,6 +35,11 @@ func Decrypt(cmd *cobra.Command, args []string) error {
 		plaintext = fmt.Sprintf("%s.plaintext", ciphertext)
 	}
 
+	prompt, err := prompts.Status()
+	if err != nil {
+		return fmt.Errorf("failed to get prompt status: %w", err)
+	}
+
 	if len(passphrase) == 0 {
 		passphrase, err = passphrases.Prompt(cmd.OutOrStdout())
 		if err != nil {
@@ -46,8 +53,10 @@ func Decrypt(cmd *cobra.Command, args []string) error {
 	}
 
 	if ciphertext == "-" {
-		if _, err := fmt.Fprintf(cmd.OutOrStdout(), "Enter ciphertext: "); err != nil {
-			return fmt.Errorf("failed to write to output: %w", err)
+		if prompt {
+			if _, err := fmt.Fprintf(cmd.OutOrStdout(), "Enter ciphertext: "); err != nil {
+				return fmt.Errorf("failed to write to output: %w", err)
+			}
 		}
 
 		key, err := keys.Read(cmd.InOrStdin())

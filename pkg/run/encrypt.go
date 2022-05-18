@@ -8,6 +8,7 @@ import (
 
 	"github.com/kubetrail/bip32/pkg/keys"
 	"github.com/kubetrail/bip39/pkg/passphrases"
+	"github.com/kubetrail/bip39/pkg/prompts"
 	"github.com/kubetrail/passwd-lock/pkg/crypto"
 	"github.com/kubetrail/passwd-lock/pkg/flags"
 	"github.com/spf13/cobra"
@@ -41,6 +42,11 @@ func Encrypt(cmd *cobra.Command, args []string) error {
 		ciphertext = fmt.Sprintf("%s.ciphertext", plaintext)
 	}
 
+	prompt, err := prompts.Status()
+	if err != nil {
+		return fmt.Errorf("failed to get prompt status: %w", err)
+	}
+
 	if len(passphrase) == 0 {
 		passphrase, err = passphrases.New(cmd.OutOrStdout())
 		if err != nil {
@@ -54,8 +60,10 @@ func Encrypt(cmd *cobra.Command, args []string) error {
 	}
 
 	if plaintext == "-" {
-		if _, err := fmt.Fprintf(cmd.OutOrStdout(), "Enter plaintext: "); err != nil {
-			return fmt.Errorf("failed to write to output: %w", err)
+		if prompt {
+			if _, err := fmt.Fprintf(cmd.OutOrStdout(), "Enter plaintext: "); err != nil {
+				return fmt.Errorf("failed to write to output: %w", err)
+			}
 		}
 
 		key, err := keys.Read(cmd.InOrStdin())
