@@ -1,6 +1,6 @@
 module github.com/kubetrail/passwd-lock
 
-go 1.17
+go 1.18
 
 require (
 	github.com/kubetrail/bip32 v0.0.0-20220506185448-dcf51ab1c4de
