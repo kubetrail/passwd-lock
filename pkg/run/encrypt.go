@@ -66,11 +66,11 @@ func Encrypt(cmd *cobra.Command, args []string) error {
 			}
 		}
 
-		key, err := keys.Read(cmd.InOrStdin())
+		input, err := keys.Read(cmd.InOrStdin())
 		if err != nil {
 			return fmt.Errorf("failed to read key input: %w", err)
 		}
-		b = []byte(key)
+		b = []byte(input)
 	} else {
 		b, err = os.ReadFile(plaintext)
 		if err != nil {
@@ -98,6 +98,7 @@ func Encrypt(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to write to output: %w", err)
 		}
 	} else {
+		jb = append(jb, '\n')
 		if err := os.WriteFile(ciphertext, jb, 0600); err != nil {
 			return fmt.Errorf("failed to write ciphertext file: %w", err)
 		}

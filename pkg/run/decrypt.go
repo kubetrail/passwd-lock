@@ -25,6 +25,7 @@ func Decrypt(cmd *cobra.Command, args []string) error {
 	passphrase := viper.GetString(flags.Passphrase)
 
 	var b []byte
+	var input string
 	var err error
 
 	if len(ciphertext) == 0 {
@@ -59,27 +60,30 @@ func Decrypt(cmd *cobra.Command, args []string) error {
 			}
 		}
 
-		key, err := keys.Read(cmd.InOrStdin())
+		input, err = keys.Read(cmd.InOrStdin())
 		if err != nil {
 			return fmt.Errorf("failed to read ciphertext from input: %w", err)
-		}
-		b, err = hex.DecodeString(key)
-		if err != nil {
-			err1 := err
-			out := &output{}
-			if err := json.Unmarshal([]byte(key), out); err != nil {
-				return fmt.Errorf("failed to decode input as hex string or json: %v, %v", err1, err)
-			}
-
-			b, err = hex.DecodeString(out.Ciphertext)
-			if err != nil {
-				return fmt.Errorf("failed to decode ciphertext as hex in json input: %w", err)
-			}
 		}
 	} else {
 		b, err = os.ReadFile(ciphertext)
 		if err != nil {
 			return fmt.Errorf("failed to read file %s: %w", ciphertext, err)
+		}
+
+		input = string(b)
+	}
+
+	b, err = hex.DecodeString(input)
+	if err != nil {
+		err1 := err
+		out := &output{}
+		if err := json.Unmarshal([]byte(input), out); err != nil {
+			return fmt.Errorf("failed to decode input as hex string or json: %v, %v", err1, err)
+		}
+
+		b, err = hex.DecodeString(out.Ciphertext)
+		if err != nil {
+			return fmt.Errorf("failed to decode ciphertext as hex in json input: %w", err)
 		}
 	}
 
